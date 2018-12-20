@@ -1,0 +1,6 @@
+- symbol finder; I would like to be able to LD_PRELOAD this library, and have it find the symbol tables
+to locate symbols for potential calling, or overriding.
+
+- elfdump; Print some general information about an elf file
+
+- find out where symbol tables are stored in virtual memory for symbol finder
