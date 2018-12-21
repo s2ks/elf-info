@@ -5,8 +5,7 @@
 
 #include "elfchk.h"
 
-
-extern int get_ident_from_file(FILE *file, char *ident)
+extern int get_ident_from_file(FILE *file, unsigned char *ident)
 {
 	int status;
 
@@ -16,14 +15,14 @@ extern int get_ident_from_file(FILE *file, char *ident)
 	return ferror(file) || feof(file);
 }
 
-extern int get_ident_from_addr(void *addr, char *ident)
+extern int get_ident_from_addr(void *addr, unsigned char *ident)
 {
 	//TODO
 	return -1;
 }
 
 #define CHECK(__cond__) do { valid += __cond__; chk++; } while(0)
-extern int is_mag_valid(char *ident)
+extern int is_mag_valid(unsigned char *ident)
 {
  	const union {
 		unsigned char 	magb[4];
@@ -34,24 +33,24 @@ extern int is_mag_valid(char *ident)
 	return mag.magi == chk.magi;
 }
 
-extern int is_class_valid(char *ident)
+extern int is_class_valid(unsigned char *ident)
 {
 	return ident[EI_CLASS] != ELFCLASSNONE;
 }
 
-extern int is_version_valid(char *ident)
+extern int is_version_valid(unsigned char *ident)
 {
 	return ident[EI_VERSION] != EV_NONE;
 }
 
 #undef CHECK
 
-extern int is_elf32(char *ident)
+extern int is_elf32(unsigned char *ident)
 {
 	return ident[EI_CLASS] == ELFCLASS32;
 }
 
-extern int is_elf64(char *ident)
+extern int is_elf64(unsigned char *ident)
 {
 	return ident[EI_CLASS] == ELFCLASS64;
 }

@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <unistd.h>
 #include <elf.h>
@@ -11,7 +12,7 @@
 #include "elfstr.h"
 #include "elfchk.h"
 
-#include "order32.h"
+#include "util/order32.h"
 
 #ifdef BENCH
 #define TIME_BENCH 1
@@ -161,9 +162,9 @@ static void dump_dynsym(void)
 			printf("%6lu: ", x);
 			printf("%-12lx", symtab[x].st_value);
 			printf("%-12lu", symtab[x].st_size);
-			printf("%-12s", get_sym_bind_name(symtab[x].st_info));
-			printf("%-12s", get_sym_type_name(symtab[x].st_info));
-			printf("%-12s", get_sym_vis_name(symtab[x].st_other));
+			printf("%-12s", get_sym_bind_unsafe(symtab[x].st_info));
+			printf("%-12s", get_sym_type_unsafe(symtab[x].st_info));
+			printf("%-12s", get_sym_vis_unsafe(symtab[x].st_other));
 			printf("%s\n", strtab + symtab[x].st_name);
 		}
 
@@ -277,7 +278,7 @@ static void dump_sections(void)
 			"NUM", "TYPE", "OFFSET (16)", "SIZE (10)", "ENTSIZE (10)", "NAME");
 	for(unsigned int i = 0; i < ehdr->e_shnum; i++) {
 		printf("%6u: ", i);
-		printf("%-12s", get_section_type_name(shdr[i].sh_type));
+		printf("%-12s", get_section_type_unsafe(shdr[i].sh_type));
 		printf("%-12lx", shdr[i].sh_offset);
 		printf("%-12lu", shdr[i].sh_size);
 		printf("%-14lu", shdr[i].sh_entsize);
@@ -293,7 +294,7 @@ int main(int argc, char **argv)
 
 	int endianness = ELFDATANONE;
 
-	ELf32_Ehdr elf32_header;
+	Elf32_Ehdr elf32_header;
 	Elf64_Ehdr elf_header;
 
 	file = fopen(filename, "r");
@@ -341,51 +342,10 @@ int main(int argc, char **argv)
 		fprintf(stderr, "This means things might break, sorry.\n");
 	}
 
-
-
-	/* read ELF header */
-	head = get_file_head(fd);
-	if(!is_elf(head)) {
-		close(fd);
-		free(head);
-		printf("File type is not supported.\n");
-		exit(-1);
-	}
-
-	if(is_elf32(head)) {
-		close(fd);
-		free(head);
-		printf("Cannot handle 32 bit yet, sorry!\n");
-		exit(-1);
-	} else if(!is_elf64(head)) {
-		assert(head->e_ident[EI_CLASS] == ELFCLASSNONE);
-		printf("Invalid class, assuming 64 bit\n");
-	}
-
-	free(head);
-
-	ehdr = get_file_header64(fd);
-
-	phdr = get_program_header_table();
-	shdr = get_section_header_table();
-
-	strtabs = get_string_tables();
-
-	dump_sections();
-	putchar('\n');
-	//dump_dynamic();
-	dump_dynsym();
-
-	free(ehdr);
-	free(phdr);
-	free(shdr);
-	string_tables_free(strtabs);
-	close(fd);
-
 error:
 	perror(filename);
-	exit(errno);
 
 exit:
-	return 0;
+	fclose(file);
+	return errno;
 }

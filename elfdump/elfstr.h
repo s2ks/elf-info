@@ -88,7 +88,6 @@ static const char *const ei_data[] = {
 };
 
 static const char *const ei_osabi[] = {
-	[ELFOSABI_NONE]		= "NONE",
 	[ELFOSABI_SYSV] 	= "SYSV",
 	[ELFOSABI_HPUX]		= "HPUX",
 	[ELFOSABI_NETBSD] 	= "NETBSD",
@@ -96,7 +95,7 @@ static const char *const ei_osabi[] = {
 	[ELFOSABI_SOLARIS] 	= "SOLARIS",
 	[ELFOSABI_IRIX] 	= "IRIX",
 	[ELFOSABI_FREEBSD] 	= "FREEBSD",
-	[ELFOSABI_TRUE64]	= "TRUE64",
+	[ELFOSABI_TRU64]	= "TRUE64",
 	[ELFOSABI_ARM]		= "ARM",
 	[ELFOSABI_STANDALONE]	= "STANDALONE"
 };
@@ -104,7 +103,7 @@ static const char *const ei_osabi[] = {
 extern const char *get_section_type_unsafe(uint32_t type);
 extern const char *get_section_type(uint32_t type);
 
-extern char **get_section_flags(uint64_t flags, char **buf);
+extern const char **get_section_flags(uint64_t flags, const char **buf);
 extern size_t section_flags_alocsz(uint64_t flags);
 
 extern const char *get_sym_vis_unsafe(uint8_t other);

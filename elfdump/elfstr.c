@@ -104,7 +104,7 @@ extern size_t section_flags_alocsz(uint64_t flags)
 	return flagc * sizeof(void *);
 }
 
-extern char **get_section_flags(uint64_t flags, char **buf)
+extern const char **get_section_flags(uint64_t flags, const char **buf)
 {
 	int i = 0, x;
 
@@ -114,7 +114,7 @@ extern char **get_section_flags(uint64_t flags, char **buf)
 		buf[i] = NULL;
 
 		for(x = 0; x < flagc && buf[i] == NULL; x++)
-			buf[i] = sh_flags_str[flags & sh_flags[x]];
+			buf[i] = (const char *) sh_flags_str[flags & sh_flags[x]];
 
 		if(buf[i]) {
 			flags &= ~sh_flags[x];

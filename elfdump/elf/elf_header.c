@@ -1,3 +1,6 @@
+#include <stddef.h>
+#include <stdio.h>
+
 #include <elf.h>
 
 #include "elf_header.h"

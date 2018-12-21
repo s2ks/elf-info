@@ -1,6 +1,7 @@
 #ifndef __ELF_HEADER_INCLUDE__
 #define __ELF_HEADER_INCLUDE__
 
+#include <stdio.h>
 #include <elf.h>
 
 extern int file_read_elf_header32(FILE *file, Elf32_Ehdr *header);
