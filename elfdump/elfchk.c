@@ -3,54 +3,37 @@
 
 #include <elf.h>
 
+#include "elf/elf_header.h"
+
 #include "elfchk.h"
 
-extern int get_ident_from_file(FILE *file, unsigned char *ident)
-{
-	int status;
-
-	rewind(file);
-	fread(ident, sizeof(*ident), EI_NIDENT, file);
-
-	return ferror(file) || feof(file);
-}
-
-extern int get_ident_from_addr(void *addr, unsigned char *ident)
-{
-	//TODO
-	return -1;
-}
-
-#define CHECK(__cond__) do { valid += __cond__; chk++; } while(0)
-extern int is_mag_valid(unsigned char *ident)
+extern int is_mag_valid(Elf_Header *header)
 {
  	const union {
-		unsigned char 	magb[4];
-		uint32_t	magi;
-	} mag = { { ident[EI_MAG0], ident[EI_MAG1], ident[EI_MAG2], ident[EI_MAG3] } },
-	  chk = { { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 } };
+		unsigned char 	bytes[4];
+		uint32_t	mag;
+	} ident = { { header->ident[EI_MAG0], header->ident[EI_MAG1], header->ident[EI_MAG2], header->ident[EI_MAG3] } },
+	  check = { { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 } };
 
-	return mag.magi == chk.magi;
+	return ident.mag == check.mag;
 }
 
-extern int is_class_valid(unsigned char *ident)
+extern int is_class_valid(Elf_Header *header)
 {
-	return ident[EI_CLASS] != ELFCLASSNONE;
+	return header->ident[EI_CLASS] != ELFCLASSNONE;
 }
 
-extern int is_version_valid(unsigned char *ident)
+extern int is_version_valid(Elf_Header *header)
 {
-	return ident[EI_VERSION] != EV_NONE;
+	return header->ident[EI_VERSION] != EV_NONE;
 }
 
-#undef CHECK
-
-extern int is_elf32(unsigned char *ident)
+extern int is_elf32(Elf_Header *header)
 {
-	return ident[EI_CLASS] == ELFCLASS32;
+	return header->ident[EI_CLASS] == ELFCLASS32;
 }
 
-extern int is_elf64(unsigned char *ident)
+extern int is_elf64(Elf_Header *header)
 {
-	return ident[EI_CLASS] == ELFCLASS64;
+	return header->ident[EI_CLASS] == ELFCLASS64;
 }

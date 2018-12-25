@@ -12,13 +12,14 @@
 #include "elfstr.h"
 #include "elfchk.h"
 
+#include "elf/elf_header.h"
 #include "util/order32.h"
 
 #ifdef BENCH
 #define TIME_BENCH 1
 #endif
 
-#define error_if(__cond__) do { if(__cond__) goto error; } while(0)
+#define error_if(__cond, __label) do { if(__cond) goto __label; } while(0)
 
 static int fd;
 
@@ -292,55 +293,35 @@ int main(int argc, char **argv)
 	FILE *file;
 	char *filename = argv[argc - 1];
 
-	int endianness = ELFDATANONE;
-
-	Elf32_Ehdr elf32_header;
-	Elf64_Ehdr elf_header;
+	Elf_Header elf_header;
 
 	file = fopen(filename, "r");
-	error_if(!file);
+	error_if(!file, error);
 
-	error = get_ident_from_file(file, elf_header.e_ident);
-	if(error) {
-		fprintf(stderr, "error reading %s\n", filename);
+	error = get_ident_from_file(file, &elf_header);
+	error_if(error, read_error);
 
-		if(feof(file))
-			fprintf(stderr, "end of file reached\n");
-
+	if(!is_mag_valid(&elf_header)) {
+		fprintf(stderr, "ERROR %s is not an ELF file\n", filename);
 		exit(-1);
 	}
 
-	if(!is_mag_valid(elf_header.e_ident)) {
-		fprintf(stderr, "%s failed to identify as a valid ELF file\n", filename);
+	if(!is_class_valid(&elf_header)) {
+		fprintf(stderr, "ERROR: %s - invalid architecture\n", filename);
 		exit(-1);
 	}
 
-	if(!is_class_valid(elf_header.e_ident)) {
-		fprintf(stderr, "%s does not specify a valid architecture\n", filename);
-		exit(-1);
-	}
+	error = read_elf_header_from_file(file, &elf_header);
+	error_if(error, read_error);
 
-	if(!is_version_valid(elf_header.e_ident))
-		fprintf(stderr, "WARNING: %s specifies an invalid version (%x) expected %x\n",
-				filename, elf_header.e_ident[EI_VERSION], EV_CURRENT);
+	dump_elf_header(&elf_header);
 
+	goto exit;
 
-	if(ORDER_ENDIANNESS == ORDER_LITTLE_ENDIAN)
-		endianness = ELFDATA2LSB;
-	else if(ORDER_ENDIANNESS == ORDER_BIG_ENDIAN)
-		endianness = ELFDATA2MSB;
-	else {
-		fprintf(stderr, "WARNING: Could not detect system endianness.\n");
-		endianness = ELFDATA2LSB;
-	}
-
-	if(elf_header.e_ident[EI_DATA] == ELFDATANONE)
-		fprintf(stderr, "WARNING: %s specifies an unknown data format.\n", filename);
-
-	if(elf_header.e_ident[EI_DATA] != endianness) {
-		fprintf(stderr, "WARING: System endianness does not match the specified endianness of %s.\n", filename);
-		fprintf(stderr, "This means things might break, sorry.\n");
-	}
+read_error:
+	fprintf(stderr, "error reading %s\n", filename);
+	if(feof(file))
+		fprintf(stderr, "end of file reached\n");
 
 error:
 	perror(filename);

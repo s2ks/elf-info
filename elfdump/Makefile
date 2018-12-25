@@ -7,6 +7,7 @@ OBJECTS = $(LIBOBJS) main.o
 DEPENDS = $(OBJECTS:.o=.d)
 
 CFLAGS += -Wall -Wextra
+CFLAGS += -I.
 
 VPATH += elf
 VPATH += util
